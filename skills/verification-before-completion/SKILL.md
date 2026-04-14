@@ -1,139 +1,94 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+description: Use when the user asks whether work is done, fixed, passing, or ready for review and Codex should verify the current state with fresh evidence before making any completion claim
 ---
 
-# Verification Before Completion
+# Verification Before Completion For Codex
 
-## Overview
+Codex should not claim success based on intent, confidence, or a stale test run.
 
-Claiming work is complete without verification is dishonesty, not efficiency.
+Verify first. Then report the result.
 
-**Core principle:** Evidence before claims, always.
+## When To Use
 
-**Violating the letter of this rule is violating the spirit of this rule.**
+Use this skill before saying any of the following:
 
-## The Iron Law
+- "Done"
+- "Fixed"
+- "All tests pass"
+- "Ready for PR"
+- "Build succeeds"
+- "This should work now"
 
-```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
-```
+Also use it when the user explicitly asks to verify readiness, completion, or review status.
 
-If you haven't run the verification command in this message, you cannot claim it passes.
+## Core Rule
 
-## The Gate Function
+For every status claim, identify the command or check that proves it, run it, and report what it actually showed.
 
-```
-BEFORE claiming any status or expressing satisfaction:
+If you did not run the proof step in the current work cycle, do not make the claim.
 
-1. IDENTIFY: What command proves this claim?
-2. RUN: Execute the FULL command (fresh, complete)
-3. READ: Full output, check exit code, count failures
-4. VERIFY: Does output confirm the claim?
-   - If NO: State actual status with evidence
-   - If YES: State claim WITH evidence
-5. ONLY THEN: Make the claim
+## Activation Cue
 
-Skip any step = lying, not verifying
-```
+When this skill applies, say it plainly:
 
-## Common Failures
+`Using verification-before-completion to check the current state before making any completion claim.`
 
-| Claim | Requires | Not Sufficient |
-|-------|----------|----------------|
-| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
-| Linter clean | Linter output: 0 errors | Partial check, extrapolation |
-| Build succeeds | Build command: exit 0 | Linter passing, logs look good |
-| Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
-| Regression test works | Red-green cycle verified | Test passes once |
-| Agent completed | VCS diff shows changes | Agent reports "success" |
-| Requirements met | Line-by-line checklist | Tests passing |
+## Minimal Verification Loop
 
-## Red Flags - STOP
+1. Identify the exact claim
+2. Choose the command or check that proves it
+3. Run it fresh
+4. Read the result, not just the exit code
+5. Report the real state
 
-- Using "should", "probably", "seems to"
-- Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
-- About to commit/push/PR without verification
-- Trusting agent success reports
-- Relying on partial verification
-- Thinking "just this once"
-- Tired and wanting work over
-- **ANY wording implying success without having run verification**
+## Examples
 
-## Rationalization Prevention
+**Good**
+- Ran `pytest tests/unit/test_api.py -q`; 12 tests passed
+- Ran `npm run build`; build completed with exit code 0
+- Reproduced the original bug path manually; the failing state no longer occurs
 
-| Excuse | Reality |
-|--------|---------|
-| "Should work now" | RUN the verification |
-| "I'm confident" | Confidence ≠ evidence |
-| "Just this once" | No exceptions |
-| "Linter passed" | Linter ≠ compiler |
-| "Agent said success" | Verify independently |
-| "I'm tired" | Exhaustion ≠ excuse |
-| "Partial check is enough" | Partial proves nothing |
-| "Different words so rule doesn't apply" | Spirit over letter |
+**Bad**
+- "Should be fixed now"
+- "Looks good"
+- "I updated the code so it passes"
+- "The agent said it worked"
 
-## Key Patterns
+## Verification Must Match The Claim
 
-**Tests:**
-```
-✅ [Run test command] [See: 34/34 pass] "All tests pass"
-❌ "Should pass now" / "Looks correct"
-```
+| Claim | Required evidence |
+|------|-------------------|
+| Tests pass | Test output |
+| Build succeeds | Build output |
+| Bug fixed | Reproduction path or regression test |
+| Feature complete | Requirement checklist plus relevant verification |
+| Ready for review | Verification plus a quick sanity pass on changed files |
 
-**Regression tests (TDD Red-Green):**
-```
-✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
-❌ "I've written a regression test" (without red-green verification)
-```
+## Codex-Specific Guidance
 
-**Build:**
-```
-✅ [Run build] [See: exit 0] "Build passes"
-❌ "Linter passed" (linter doesn't check compilation)
-```
+- Prefer the smallest command that proves the claim
+- For larger tasks, run the targeted check first, then broader suite if needed
+- If verification is expensive, say so and report what was verified versus what was not
+- Never hide gaps; state them plainly
 
-**Requirements:**
-```
-✅ Re-read plan → Create checklist → Verify each → Report gaps or completion
-❌ "Tests pass, phase complete"
-```
+## Reporting Format
 
-**Agent delegation:**
-```
-✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
-❌ Trust agent report
-```
+Keep it concise:
 
-## Why This Matters
+- What you verified
+- What command/check you ran
+- What happened
+- What remains unverified, if anything
 
-From 24 failure memories:
-- your human partner said "I don't believe you" - trust broken
-- Undefined functions shipped - would crash
-- Missing requirements shipped - incomplete features
-- Time wasted on false completion → redirect → rework
-- Violates: "Honesty is a core value. If you lie, you'll be replaced."
+Example:
 
-## When To Apply
+`Ran pytest tests/unit/test_router.py -q: 18 passed. I verified the router change directly. I did not run the full suite yet.`
 
-**ALWAYS before:**
-- ANY variation of success/completion claims
-- ANY expression of satisfaction
-- ANY positive statement about work state
-- Committing, PR creation, task completion
-- Moving to next task
-- Delegating to agents
+## If Verification Fails
 
-**Rule applies to:**
-- Exact phrases
-- Paraphrases and synonyms
-- Implications of success
-- ANY communication suggesting completion/correctness
+Do not soften it. Report the failure plainly and continue from there.
 
-## The Bottom Line
+Example:
 
-**No shortcuts for verification.**
-
-Run the command. Read the output. THEN claim the result.
-
-This is non-negotiable.
+`Ran npm test -- router tests still fail in 2 cases related to trailing slash handling. The fix is not complete yet.`

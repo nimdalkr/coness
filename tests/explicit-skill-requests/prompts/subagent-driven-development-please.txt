@@ -1,1 +1,9 @@
-subagent-driven-development, please
+Use subagent-driven-development to execute this written plan.
+
+Plan:
+1. Add a parser helper in `src/parser/helpers.ts`
+2. Update `src/parser/index.ts` to use the helper
+3. Add tests in `tests/parser/helpers.test.ts`
+4. Run the parser test suite
+
+Do not implement yet. First explain how you would split this plan into local work and delegable subagent tasks.

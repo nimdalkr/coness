@@ -124,3 +124,23 @@ Junctions normally work without special permissions. If creation fails, try runn
 
 - Report issues: https://github.com/obra/superpowers/issues
 - Main documentation: https://github.com/obra/superpowers
+
+## Evaluating Codex Behavior
+
+To compare how Codex triggers skills between the clean repo `HEAD` and your local working tree, use the Codex evaluation harness:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tests\codex\compare-head-vs-working.ps1
+```
+
+See [tests/codex/README.md](../tests/codex/README.md) for details.
+
+## Coness
+
+For a simpler one-command entrypoint, use `coness`:
+
+```powershell
+npm run coness -- quick
+```
+
+Docs: [docs/coness.md](./coness.md)

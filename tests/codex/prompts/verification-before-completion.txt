@@ -1,0 +1,1 @@
+I think the work is done and ready to review. Use verification-before-completion and tell me, with fresh evidence, whether it is actually complete, passing, and ready for review.

@@ -1,117 +1,100 @@
 ---
 name: using-superpowers
-description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+description: Use when starting any conversation - establishes Codex-first skill selection rules, favoring direct execution for small scoped tasks and process skills for ambiguous or risky work
 ---
 
 <SUBAGENT-STOP>
 If you were dispatched as a subagent to execute a specific task, skip this skill.
 </SUBAGENT-STOP>
 
-<EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+# Using Superpowers In Codex
 
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+This fork is optimized for Codex. The goal is not to force a ceremony before every action. The goal is to make good decisions quickly and consistently.
 
-This is not negotiable. This is not optional. You cannot rationalize your way out of this.
-</EXTREMELY-IMPORTANT>
+User instructions still override everything in this skill.
 
-## Instruction Priority
+## Core Rule
 
-Superpowers skills override default system prompt behavior, but **user instructions always take precedence**:
+Before acting, classify the request into one of these buckets:
 
-1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
-2. **Superpowers skills** — override default system behavior where they conflict
-3. **Default system prompt** — lowest priority
+1. **Direct execution** - small, concrete, low-risk change or question
+2. **Design first** - ambiguous feature, product decision, or behavior change
+3. **Debug first** - bug, failure, regression, or unexpected behavior
+4. **Plan first** - multi-step implementation that should be broken into tasks
+5. **Review/verify first** - completion, merge, or code review stage
 
-If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
+If a bucket clearly matches, use the corresponding skill. If none match, proceed normally.
 
-## How to Access Skills
+## Codex-First Decision Table
 
-**In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
+| Situation | What to do |
+|---------|----------|
+| User asks a small factual question or tiny code edit | Respond or implement directly |
+| User wants a new feature but scope is still fuzzy | Use `brainstorming` |
+| User wants a non-trivial implementation with known requirements | Use `writing-plans` |
+| User reports a bug, failing test, broken build, or regression | Use `systematic-debugging` |
+| You are about to write implementation code for a feature or fix | Use `test-driven-development` |
+| You already have a written plan and tasks are independent | Use `subagent-driven-development` |
+| You are about to say "done", "fixed", "passing", or open a PR | Use `verification-before-completion` |
 
-**In Copilot CLI:** Use the `skill` tool. Skills are auto-discovered from installed plugins. The `skill` tool works the same as Claude Code's `Skill` tool.
+## Do Not Over-Apply Skills
 
-**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
+This Codex fork intentionally avoids "invoke a skill before every sentence" behavior.
 
-**In other environments:** Check your platform's documentation for how skills are loaded.
+Do not stop for process overhead when all of the following are true:
 
-## Platform Adaptation
+- The request is specific
+- The change is small
+- The risk is low
+- You can verify it immediately
 
-Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
+Examples:
 
-# Using Skills
+- Rename a variable in one file
+- Answer where a setting lives
+- Fix a typo in documentation
+- Adjust one test assertion with clear intent
 
-## The Rule
+In those cases, work directly and verify the result.
 
-**Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.
+## Do Apply Skills Early When Risk Is Real
 
-```dot
-digraph skill_flow {
-    "User message received" [shape=doublecircle];
-    "About to EnterPlanMode?" [shape=doublecircle];
-    "Already brainstormed?" [shape=diamond];
-    "Invoke brainstorming skill" [shape=box];
-    "Might any skill apply?" [shape=diamond];
-    "Invoke Skill tool" [shape=box];
-    "Announce: 'Using [skill] to [purpose]'" [shape=box];
-    "Has checklist?" [shape=diamond];
-    "Create TodoWrite todo per item" [shape=box];
-    "Follow skill exactly" [shape=box];
-    "Respond (including clarifications)" [shape=doublecircle];
+Use process skills early when any of these are true:
 
-    "About to EnterPlanMode?" -> "Already brainstormed?";
-    "Already brainstormed?" -> "Invoke brainstorming skill" [label="no"];
-    "Already brainstormed?" -> "Might any skill apply?" [label="yes"];
-    "Invoke brainstorming skill" -> "Might any skill apply?";
+- The user is asking for a new feature, workflow, or behavior change
+- Requirements are unclear
+- Multiple files or systems are involved
+- The task affects architecture, APIs, or UX
+- The task has already gone wrong once
+- You are tempted to "just try something"
 
-    "User message received" -> "Might any skill apply?";
-    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
-    "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
-    "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
-    "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
-    "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
-    "Has checklist?" -> "Follow skill exactly" [label="no"];
-    "Create TodoWrite todo per item" -> "Follow skill exactly";
-}
-```
+## Priority
 
-## Red Flags
+When more than one skill could apply, use this order:
 
-These thoughts mean STOP—you're rationalizing:
+1. `systematic-debugging`
+2. `brainstorming`
+3. `writing-plans`
+4. `test-driven-development`
+5. `subagent-driven-development`
+6. `verification-before-completion`
 
-| Thought | Reality |
-|---------|---------|
-| "This is just a simple question" | Questions are tasks. Check for skills. |
-| "I need more context first" | Skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
-| "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If a skill exists, use it. |
-| "I remember this skill" | Skills evolve. Read current version. |
-| "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Simple things become complex. Use it. |
-| "I'll just do this one thing first" | Check BEFORE doing anything. |
-| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
-| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+Reason: first decide whether the work is broken, unclear, or simply ready to implement.
 
-## Skill Priority
+## Codex Operating Style
 
-When multiple skills could apply, use this order:
+- Prefer direct execution over ceremony for small tasks
+- Prefer short plans over long documents unless the work is large
+- Prefer local verification over claims
+- Prefer one strong next step over a long lecture about process
+- Prefer subagents only when the tasks are genuinely separable
 
-1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
-2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+## What To Say
 
-"Let's build X" → brainstorming first, then implementation skills.
-"Fix this bug" → debugging first, then domain-specific skills.
+When you activate a skill, announce it briefly and move on:
 
-## Skill Types
+- "Using brainstorming to pin down the feature before coding."
+- "Using systematic-debugging to find the root cause before changing code."
+- "Using verification-before-completion to confirm the current state."
 
-**Rigid** (TDD, debugging): Follow exactly. Don't adapt away discipline.
-
-**Flexible** (patterns): Adapt principles to context.
-
-The skill itself tells you which.
-
-## User Instructions
-
-Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
+Keep it short. Codex works best when the process is explicit but lightweight.

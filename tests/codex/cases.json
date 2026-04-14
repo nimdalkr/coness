@@ -1,0 +1,32 @@
+[
+  {
+    "id": "brainstorming-explicit",
+    "prompt_file": "../explicit-skill-requests/prompts/please-use-brainstorming.txt",
+    "expected_skill": "brainstorming",
+    "max_turns": 3
+  },
+  {
+    "id": "systematic-debugging-natural",
+    "prompt_file": "../skill-triggering/prompts/systematic-debugging.txt",
+    "expected_skill": "systematic-debugging",
+    "max_turns": 3
+  },
+  {
+    "id": "writing-plans-natural",
+    "prompt_file": "../skill-triggering/prompts/writing-plans.txt",
+    "expected_skill": "writing-plans",
+    "max_turns": 3
+  },
+  {
+    "id": "subagent-driven-development-explicit",
+    "prompt_file": "../explicit-skill-requests/prompts/subagent-driven-development-please.txt",
+    "expected_skill": "subagent-driven-development",
+    "max_turns": 3
+  },
+  {
+    "id": "verification-before-completion-explicit",
+    "prompt_file": "./prompts/verification-before-completion.txt",
+    "expected_skill": "verification-before-completion",
+    "max_turns": 3
+  }
+]

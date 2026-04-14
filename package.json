@@ -2,5 +2,11 @@
   "name": "superpowers",
   "version": "5.0.7",
   "type": "module",
-  "main": ".opencode/plugins/superpowers.js"
+  "main": ".opencode/plugins/superpowers.js",
+  "bin": {
+    "coness": "./scripts/coness.js"
+  },
+  "scripts": {
+    "coness": "node ./scripts/coness.js"
+  }
 }
