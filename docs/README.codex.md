@@ -144,3 +144,15 @@ npm run coness -- quick
 ```
 
 Docs: [docs/coness.md](./coness.md)
+
+To install the skill link and run the default quick evaluation immediately:
+
+```powershell
+npm install
+```
+
+or:
+
+```powershell
+node .\scripts\coness.js install
+```

@@ -7,6 +7,7 @@
     "coness": "./scripts/coness.js"
   },
   "scripts": {
-    "coness": "node ./scripts/coness.js"
+    "coness": "node ./scripts/coness.js",
+    "postinstall": "node ./scripts/coness.js install"
   }
 }

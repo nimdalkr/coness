@@ -6,6 +6,14 @@ It compares the clean `HEAD` version of the skills against your current working 
 
 ## Commands
 
+Install and run the default quick check:
+
+```powershell
+node .\scripts\coness.js install
+```
+
+If someone runs `npm install`, this install step also runs automatically by default.
+
 Quick run:
 
 ```powershell
@@ -50,3 +58,4 @@ and
 - Temporarily swaps the installed `superpowers` skill junction under `~/.agents/skills/`
 - Restores the prior skill install after the run finishes
 - Uses the PowerShell comparison harness under `tests/codex/`
+- `install` mode links the repo into `~/.agents/skills/superpowers` and then runs `quick` unless `-SkipQuickRun` is passed

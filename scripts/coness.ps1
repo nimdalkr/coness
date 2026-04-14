@@ -1,10 +1,11 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("quick", "full", "case", "help")]
+    [ValidateSet("install", "quick", "full", "case", "help")]
     [string]$Mode = "quick",
     [string[]]$CaseId = @(),
     [string]$CodexModel = "",
-    [switch]$KeepArtifacts
+    [switch]$KeepArtifacts,
+    [switch]$SkipQuickRun
 )
 
 Set-StrictMode -Version Latest
@@ -21,10 +22,44 @@ $quickCases = @(
     "verification-before-completion-explicit"
 )
 
+$SkillsRoot = Join-Path $env:USERPROFILE ".agents\skills"
+$InstalledSkillPath = Join-Path $SkillsRoot "superpowers"
+
+function Test-CommandAvailable([string]$Name) {
+    return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
+}
+
+function Ensure-Directory([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) {
+        New-Item -ItemType Directory -Path $Path | Out-Null
+    }
+}
+
+function Install-ConessSkillLink {
+    Ensure-Directory $SkillsRoot
+    if (Test-Path -LiteralPath $InstalledSkillPath) {
+        try {
+            $existing = (Get-Item -LiteralPath $InstalledSkillPath).Target
+            if ($existing -and ($existing -contains (Join-Path $RepoRoot "skills"))) {
+                Write-Host "Skill link already points to this repo."
+                return
+            }
+        } catch {
+        }
+
+        Remove-Item -LiteralPath $InstalledSkillPath -Force -Recurse
+    }
+
+    $skillsPath = Join-Path $RepoRoot "skills"
+    cmd /c mklink /J "$InstalledSkillPath" "$skillsPath" | Out-Null
+    Write-Host "Installed skills at $InstalledSkillPath"
+}
+
 function Show-Help {
     Write-Host "coness - Codex skill evaluation harness"
     Write-Host ""
     Write-Host "Usage:"
+    Write-Host "  coness install"
     Write-Host "  coness quick"
     Write-Host "  coness full"
     Write-Host "  coness case <case-id> [<case-id> ...]"
@@ -32,6 +67,7 @@ function Show-Help {
     Write-Host "Options:"
     Write-Host "  -CodexModel <model>    Override Codex model"
     Write-Host "  -KeepArtifacts         Keep baseline worktree artifacts"
+    Write-Host "  -SkipQuickRun          With install mode, do not auto-run quick evaluation"
     Write-Host ""
     Write-Host "Output:"
     Write-Host "  .coness\latest\results.md"
@@ -40,6 +76,36 @@ function Show-Help {
 
 if ($Mode -eq "help") {
     Show-Help
+    exit 0
+}
+
+if ($Mode -eq "install") {
+    Write-Host "Installing coness..."
+
+    if (-not (Test-CommandAvailable "git")) {
+        Write-Warning "Git is not available. Skipping coness install."
+        exit 0
+    }
+
+    if (-not (Test-CommandAvailable "codex")) {
+        Write-Warning "Codex CLI is not available. Skill link was not installed."
+        exit 0
+    }
+
+    Install-ConessSkillLink
+    Write-Host "Coness install complete."
+    Write-Host "Restart Codex if it was already running."
+
+    if (-not $SkipQuickRun) {
+        Write-Host "Running default quick evaluation..."
+        $quickArgs = @("-ExecutionPolicy", "Bypass", "-File", $PSCommandPath, "quick")
+        if ($CodexModel) {
+            $quickArgs += @("-CodexModel", $CodexModel)
+        }
+        & powershell @quickArgs
+        exit $LASTEXITCODE
+    }
+
     exit 0
 }
 
