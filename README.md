@@ -1,190 +1,133 @@
-# Superpowers
+# Coness
 
-Superpowers is a complete software development workflow for your coding agents, built on top of a set of composable "skills" and some initial instructions that make sure your agent uses them.
+Coness is a Codex-first remake of the Superpowers skill workflow, originally tuned for Claude Code.
 
-## How it works
+The core idea is simple:
 
-It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do. 
+- keep the useful skill-based workflow from `superpowers`
+- rewrite the trigger logic and instructions so Codex uses it more naturally
+- ship a built-in harness so you can verify the remake against real Codex runs
 
-Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest. 
+This repository is not just a benchmark. The main product is the Codex-friendly distribution. The `coness` runner exists to prove that the remake actually changes Codex behavior.
 
-After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY. 
+## What Coness Is
 
-Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for Claude to be able to work autonomously for a couple hours at a time without deviating from the plan you put together.
+Coness takes the original Superpowers workflow and adapts it for Codex.
 
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
+That means:
 
+- skill prompts are shorter and more direct
+- small tasks can execute immediately instead of always forcing a long process
+- planning, debugging, verification, and subagent usage are rewritten around Codex behavior
+- installation is simplified for Codex users
 
-## Sponsorship
+If you want the shortest description:
 
-If Superpowers has helped you do stuff that makes money and you are so inclined, I'd greatly appreciate it if you'd consider [sponsoring my opensource work](https://github.com/sponsors/obra).
+> Coness is a Codex-first remake of a Claude-oriented skill pack, with a built-in Codex verification harness.
 
-Thanks! 
+## Quick Install
 
-- Jesse
+Requirements:
 
+- OpenAI Codex CLI
+- Git
+- Node.js
+- PowerShell on Windows
 
-## Installation
+Install:
 
-**Note:** Installation differs by platform. Claude Code or Cursor have built-in plugin marketplaces. Codex and OpenCode require manual setup.
-
-### Claude Code Official Marketplace
-
-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
-
-Install the plugin from Claude marketplace:
-
-```bash
-/plugin install superpowers@claude-plugins-official
+```powershell
+git clone https://github.com/nimdalkr/coness.git
+cd coness
+npm install
 ```
 
-### Claude Code (via Plugin Marketplace)
+`npm install` does three things:
 
-In Claude Code, register the marketplace first:
+1. installs the local `coness` entrypoint
+2. links this repo's skills into `~/.agents/skills/superpowers`
+3. runs the default `quick` Codex check once
 
-```bash
-/plugin marketplace add obra/superpowers-marketplace
+## Basic Usage
+
+Quick check:
+
+```powershell
+npm run coness -- quick
 ```
 
-Then install the plugin from this marketplace:
+Full suite:
 
-```bash
-/plugin install superpowers@superpowers-marketplace
+```powershell
+npm run coness -- full
 ```
 
-### Cursor (via Plugin Marketplace)
+Single case:
 
-In Cursor Agent chat, install from marketplace:
-
-```text
-/add-plugin superpowers
+```powershell
+node .\scripts\coness.js case writing-plans-natural
 ```
 
-or search for "superpowers" in the plugin marketplace.
+Reports are written to:
 
-### Codex
+- `.\.coness\latest\results.md`
+- `.\.coness\latest\results.json`
 
-Tell Codex:
+## Core Features
 
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.codex/INSTALL.md
-```
+### 1. Codex-first skill distribution
 
-**Detailed docs:** [docs/README.codex.md](docs/README.codex.md)
+This repo includes a rewritten version of the original workflow so Codex can use it more predictably.
 
-### OpenCode
+Key skills already tuned for Codex include:
 
-Tell OpenCode:
+- `using-superpowers`
+- `brainstorming`
+- `systematic-debugging`
+- `writing-plans`
+- `subagent-driven-development`
+- `verification-before-completion`
 
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md
-```
+### 2. One-command installation
 
-**Detailed docs:** [docs/README.opencode.md](docs/README.opencode.md)
+`coness install` links the skills into Codex's native skill directory and runs a default smoke check.
 
-### GitHub Copilot CLI
+Manual install:
 
-```bash
-copilot plugin marketplace add obra/superpowers-marketplace
-copilot plugin install superpowers@superpowers-marketplace
-```
-
-### Gemini CLI
-
-```bash
-gemini extensions install https://github.com/obra/superpowers
+```powershell
+node .\scripts\coness.js install
 ```
 
-To update:
+### 3. Built-in Codex verification harness
 
-```bash
-gemini extensions update superpowers
-```
+Coness can compare:
 
-### Verify Installation
+- the clean repository `HEAD`
+- your current working tree
 
-Start a new session in your chosen platform and ask for something that should trigger a skill (for example, "help me plan this feature" or "let's debug this issue"). The agent should automatically invoke the relevant superpowers skill.
+against the same prompt cases in Codex, then report:
 
-## The Basic Workflow
+- which skill was triggered
+- whether the expected behavior matched
+- runtime
+- input and output token usage
 
-1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
+## Third-Party Explanation
 
-2. **using-git-worktrees** - Activates after design approval. Creates isolated workspace on new branch, runs project setup, verifies clean test baseline.
+### Short version
 
-3. **writing-plans** - Activates with approved design. Breaks work into bite-sized tasks (2-5 minutes each). Every task has exact file paths, complete code, verification steps.
+Coness is a Codex-friendly remake of the original Superpowers workflow, which was designed mainly around Claude Code.
 
-4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
+### Longer version
 
-5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
+Coness keeps the useful skill system from Superpowers, but rewrites it for Codex's actual behavior. It also includes a built-in runner that checks whether those rewritten skills really trigger as intended in Codex.
 
-6. **requesting-code-review** - Activates between tasks. Reviews against plan, reports issues by severity. Critical issues block progress.
+## Docs
 
-7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up worktree.
-
-**The agent checks for relevant skills before any task.** Mandatory workflows, not suggestions.
-
-## What's Inside
-
-### Skills Library
-
-**Testing**
-- **test-driven-development** - RED-GREEN-REFACTOR cycle (includes testing anti-patterns reference)
-
-**Debugging**
-- **systematic-debugging** - 4-phase root cause process (includes root-cause-tracing, defense-in-depth, condition-based-waiting techniques)
-- **verification-before-completion** - Ensure it's actually fixed
-
-**Collaboration** 
-- **brainstorming** - Socratic design refinement
-- **writing-plans** - Detailed implementation plans
-- **executing-plans** - Batch execution with checkpoints
-- **dispatching-parallel-agents** - Concurrent subagent workflows
-- **requesting-code-review** - Pre-review checklist
-- **receiving-code-review** - Responding to feedback
-- **using-git-worktrees** - Parallel development branches
-- **finishing-a-development-branch** - Merge/PR decision workflow
-- **subagent-driven-development** - Fast iteration with two-stage review (spec compliance, then code quality)
-
-**Meta**
-- **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
-
-## Philosophy
-
-- **Test-Driven Development** - Write tests first, always
-- **Systematic over ad-hoc** - Process over guessing
-- **Complexity reduction** - Simplicity as primary goal
-- **Evidence over claims** - Verify before declaring success
-
-Read more: [Superpowers for Claude Code](https://blog.fsck.com/2025/10/09/superpowers/)
-
-## Contributing
-
-Skills live directly in this repository. To contribute:
-
-1. Fork the repository
-2. Create a branch for your skill
-3. Follow the `writing-skills` skill for creating and testing new skills
-4. Submit a PR
-
-See `skills/writing-skills/SKILL.md` for the complete guide.
-
-## Updating
-
-Skills update automatically when you update the plugin:
-
-```bash
-/plugin update superpowers
-```
+- [Codex guide](./docs/README.codex.md)
+- [Coness commands](./docs/coness.md)
+- [Codex harness details](./tests/codex/README.md)
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Community
-
-Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
-
-- **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Superpowers
-- **Issues**: https://github.com/obra/superpowers/issues
-- **Release announcements**: [Sign up](https://primeradiant.com/superpowers/) to get notified about new versions
+MIT License - see [LICENSE](./LICENSE)

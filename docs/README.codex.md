@@ -1,158 +1,104 @@
-# Superpowers for Codex
+# Coness for Codex
 
-Guide for using Superpowers with OpenAI Codex via native skill discovery.
+Coness is the Codex-first distribution of the Superpowers workflow.
 
-## Quick Install
+Use this repo if you want:
 
-Tell Codex:
+- the Superpowers-style skill workflow
+- prompts and trigger rules tuned for Codex instead of Claude Code
+- a built-in way to verify the skills against real Codex runs
 
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.codex/INSTALL.md
-```
+## Quick Start
 
-## Manual Installation
-
-### Prerequisites
-
-- OpenAI Codex CLI
-- Git
-
-### Steps
-
-1. Clone the repo:
-   ```bash
-   git clone https://github.com/obra/superpowers.git ~/.codex/superpowers
-   ```
-
-2. Create the skills symlink:
-   ```bash
-   mkdir -p ~/.agents/skills
-   ln -s ~/.codex/superpowers/skills ~/.agents/skills/superpowers
-   ```
-
-3. Restart Codex.
-
-4. **For subagent skills** (optional): Skills like `dispatching-parallel-agents` and `subagent-driven-development` require Codex's multi-agent feature. Add to your Codex config:
-   ```toml
-   [features]
-   multi_agent = true
-   ```
-
-### Windows
-
-Use a junction instead of a symlink (works without Developer Mode):
+Clone and install:
 
 ```powershell
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills"
-cmd /c mklink /J "$env:USERPROFILE\.agents\skills\superpowers" "$env:USERPROFILE\.codex\superpowers\skills"
+git clone https://github.com/nimdalkr/coness.git
+cd coness
+npm install
 ```
 
-## How It Works
+On install, Coness:
 
-Codex has native skill discovery — it scans `~/.agents/skills/` at startup, parses SKILL.md frontmatter, and loads skills on demand. Superpowers skills are made visible through a single symlink:
+1. links `skills/` into `~/.agents/skills/superpowers`
+2. makes the local `coness` entrypoint available
+3. runs the default `quick` evaluation once
 
-```
-~/.agents/skills/superpowers/ → ~/.codex/superpowers/skills/
-```
+## What Gets Installed
 
-The `using-superpowers` skill is discovered automatically and enforces skill usage discipline — no additional configuration needed.
+Codex discovers skills from `~/.agents/skills/`. Coness installs this repo's skill set there through a junction or symlink:
 
-## Usage
-
-Skills are discovered automatically. Codex activates them when:
-- You mention a skill by name (e.g., "use brainstorming")
-- The task matches a skill's description
-- The `using-superpowers` skill directs Codex to use one
-
-### Personal Skills
-
-Create your own skills in `~/.agents/skills/`:
-
-```bash
-mkdir -p ~/.agents/skills/my-skill
+```text
+~/.agents/skills/superpowers/ -> <this-repo>/skills/
 ```
 
-Create `~/.agents/skills/my-skill/SKILL.md`:
+After that, Codex can pick up the rewritten skills in new sessions.
 
-```markdown
----
-name: my-skill
-description: Use when [condition] - [what it does]
----
+## Main Commands
 
-# My Skill
-
-[Your skill content here]
-```
-
-The `description` field is how Codex decides when to activate a skill automatically — write it as a clear trigger condition.
-
-## Updating
-
-```bash
-cd ~/.codex/superpowers && git pull
-```
-
-Skills update instantly through the symlink.
-
-## Uninstalling
-
-```bash
-rm ~/.agents/skills/superpowers
-```
-
-**Windows (PowerShell):**
-```powershell
-Remove-Item "$env:USERPROFILE\.agents\skills\superpowers"
-```
-
-Optionally delete the clone: `rm -rf ~/.codex/superpowers` (Windows: `Remove-Item -Recurse -Force "$env:USERPROFILE\.codex\superpowers"`).
-
-## Troubleshooting
-
-### Skills not showing up
-
-1. Verify the symlink: `ls -la ~/.agents/skills/superpowers`
-2. Check skills exist: `ls ~/.codex/superpowers/skills`
-3. Restart Codex — skills are discovered at startup
-
-### Windows junction issues
-
-Junctions normally work without special permissions. If creation fails, try running PowerShell as administrator.
-
-## Getting Help
-
-- Report issues: https://github.com/obra/superpowers/issues
-- Main documentation: https://github.com/obra/superpowers
-
-## Evaluating Codex Behavior
-
-To compare how Codex triggers skills between the clean repo `HEAD` and your local working tree, use the Codex evaluation harness:
+Install or reinstall the skill link:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\tests\codex\compare-head-vs-working.ps1
+node .\scripts\coness.js install
 ```
 
-See [tests/codex/README.md](../tests/codex/README.md) for details.
-
-## Coness
-
-For a simpler one-command entrypoint, use `coness`:
+Run a quick Codex check:
 
 ```powershell
 npm run coness -- quick
 ```
 
-Docs: [docs/coness.md](./coness.md)
-
-To install the skill link and run the default quick evaluation immediately:
+Run the full suite:
 
 ```powershell
-npm install
+npm run coness -- full
 ```
 
-or:
+Run one scenario:
 
 ```powershell
-node .\scripts\coness.js install
+node .\scripts\coness.js case writing-plans-natural
 ```
+
+## What Coness Changes
+
+Compared with the original Superpowers repo, this distribution focuses on Codex behavior:
+
+- shorter trigger descriptions
+- less Claude-style process rigidity
+- more direct execution for small tasks
+- Codex-oriented planning, debugging, and verification instructions
+- simpler install and evaluation flow
+
+## Reports
+
+Coness writes reports to:
+
+- `.\.coness\latest\results.md`
+- `.\.coness\latest\results.json`
+
+These compare the clean repository `HEAD` with your current working tree on the same prompt cases.
+
+## Requirements
+
+- OpenAI Codex CLI
+- Git
+- Node.js
+- PowerShell on Windows
+
+## Manual Skill Link
+
+If you need to create the link yourself on Windows:
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills"
+cmd /c mklink /J "$env:USERPROFILE\.agents\skills\superpowers" "<repo-path>\skills"
+```
+
+Using `coness install` is preferred because it also handles the default smoke check.
+
+## Related Docs
+
+- [Project README](../README.md)
+- [Coness command reference](./coness.md)
+- [Harness details](../tests/codex/README.md)

@@ -1,61 +1,79 @@
 # Coness
 
-`coness` is the Codex evaluation harness for this repo.
+`coness` is the command-line entrypoint for this Codex-first remake.
 
-It compares the clean `HEAD` version of the skills against your current working tree and reports how Codex responds to the same scenario prompts.
+Its job is not only to run evaluations. It is the simplest way to install, re-link, and verify the Codex-friendly Superpowers distribution in this repository.
 
-## Commands
+## What It Does
 
-Install and run the default quick check:
+`coness` covers two practical jobs:
+
+1. install this repo's rewritten skills into Codex's skill directory
+2. verify that Codex actually responds to those skills as expected
+
+So the main product is still the Codex-friendly skill pack. The harness is how you check that the pack is working.
+
+## Common Commands
+
+Install the skills and run the default quick check:
 
 ```powershell
 node .\scripts\coness.js install
 ```
 
-If someone runs `npm install`, this install step also runs automatically by default.
+`npm install` runs this automatically by default.
 
-Quick run:
-
-```powershell
-node .\scripts\coness.js quick
-```
-
-With npm script:
+Quick verification:
 
 ```powershell
 npm run coness -- quick
 ```
 
-Single case:
+Full verification suite:
+
+```powershell
+npm run coness -- full
+```
+
+Single scenario:
 
 ```powershell
 node .\scripts\coness.js case writing-plans-natural
 ```
 
-Full suite:
+## Default Install Flow
 
-```powershell
-node .\scripts\coness.js full
-```
+When you run `npm install`, Coness:
 
-## What It Prints
+1. links this repo's `skills/` into `~/.agents/skills/superpowers`
+2. keeps the Codex skill path ready for new sessions
+3. runs the default `quick` check to make sure the setup is alive
 
-- per-case baseline vs candidate pass/fail
-- matched expected skill counts
-- artifact locations for the full reports
+This is meant to remove the manual setup most users would otherwise have to do.
+
+## What The Reports Mean
+
+Coness compares:
+
+- baseline: clean repository `HEAD`
+- candidate: your current working tree
+
+It then reports:
+
+- whether the expected skill was matched
+- execution time
+- input tokens
+- output tokens
 
 Reports are written to:
 
-`.\.coness\latest\results.md`
-
-and
-
-`.\.coness\latest\results.json`
+- `.\.coness\latest\results.md`
+- `.\.coness\latest\results.json`
 
 ## Notes
 
-- Requires Codex CLI and Git
-- Temporarily swaps the installed `superpowers` skill junction under `~/.agents/skills/`
-- Restores the prior skill install after the run finishes
-- Uses the PowerShell comparison harness under `tests/codex/`
-- `install` mode links the repo into `~/.agents/skills/superpowers` and then runs `quick` unless `-SkipQuickRun` is passed
+- Requires Codex CLI, Git, and Node.js
+- Uses the PowerShell harness under `tests/codex/`
+- Temporarily switches the installed `superpowers` link during comparisons
+- Restores the previous state after the run
+- `install` mode accepts `-SkipQuickRun` if you only want the link setup
